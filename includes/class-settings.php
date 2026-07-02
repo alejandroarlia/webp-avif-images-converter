@@ -323,7 +323,7 @@ class Webp_Avif_Images_Converter_Settings {
 		/>
 		<span id="wpac-quality-value"><?php echo esc_html( (string) $quality ); ?></span>%
 		<p class="description">
-			<?php esc_html_e( 'Calidad de compresión para WebP y AVIF (1–100). Un valor más alto produce mejor calidad pero archivos más grandes.', 'webp-avif-images-converter' ); ?>
+			<?php esc_html_e( 'Nivel de compresión para WebP y AVIF (1–100). Un valor más alto produce mejor calidad pero archivos más grandes.', 'webp-avif-images-converter' ); ?>
 		</p>
 		<?php
 	}
