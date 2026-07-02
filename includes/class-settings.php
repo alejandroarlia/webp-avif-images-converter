@@ -284,9 +284,6 @@ class Webp_Avif_Images_Converter_Settings {
 		);
 		?>
 		<fieldset>
-			<legend class="screen-reader-text">
-				<?php esc_html_e( 'Formatos de entrada', 'webp-avif-images-converter' ); ?>
-			</legend>
 			<?php foreach ( $formats as $value => $label ) : ?>
 				<label for="wpac-input-<?php echo esc_attr( $value ); ?>">
 					<input
@@ -339,9 +336,6 @@ class Webp_Avif_Images_Converter_Settings {
 		$output_formats = $settings['output_formats'] ?? array( 'webp' );
 		?>
 		<fieldset>
-			<legend class="screen-reader-text">
-				<?php esc_html_e( 'Formatos de salida', 'webp-avif-images-converter' ); ?>
-			</legend>
 			<label for="wpac-output-webp">
 				<input
 					type="checkbox"
