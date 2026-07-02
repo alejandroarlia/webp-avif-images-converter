@@ -46,6 +46,7 @@ class Webp_Avif_Images_Converter_Media {
 	public function __construct() {
 		add_filter( 'wp_generate_attachment_metadata', array( $this, 'handle_upload' ), 99, 2 );
 		add_action( 'delete_attachment', array( $this, 'delete_attachment' ), 10, 1 );
+		add_action( 'admin_notices', array( $this, 'avif_failed_notice' ) );
 	}
 
 	/**
@@ -192,6 +193,14 @@ class Webp_Avif_Images_Converter_Media {
 			'files'          => $converted_files,
 		);
 
+		// Detect AVIF requested but not generated — show admin notice.
+		if ( in_array( 'avif', $settings['output_formats'] ?? array(), true ) ) {
+			$avif_generated = ! empty( $converted_files['original']['avif'] );
+			if ( ! $avif_generated ) {
+				set_transient( 'wpac_avif_failed_notice', true, 300 );
+			}
+		}
+
 		return $metadata;
 	}
 
@@ -274,5 +283,28 @@ class Webp_Avif_Images_Converter_Media {
 		}
 
 		return $relative;
+	}
+
+	/**
+	 * Show admin notice when AVIF was requested but conversion failed.
+	 */
+	public function avif_failed_notice(): void {
+		if ( ! get_transient( 'wpac_avif_failed_notice' ) ) {
+			return;
+		}
+
+		delete_transient( 'wpac_avif_failed_notice' );
+
+		$avif_available = function_exists( 'imageavif' ) && ( imagetypes() & IMG_AVIF );
+		if ( $avif_available ) {
+			$message = __( 'WebP & AVIF Converter: la conversión a AVIF falló. El archivo pudo estar corrupto o ser demasiado grande. Solo se generó WebP.', 'webp-avif-images-converter' );
+		} else {
+			$message = __( 'WebP & AVIF Converter: AVIF no está disponible en este servidor porque GD no tiene soporte para imageavif(). Solo se generó WebP. Desactivá AVIF en los ajustes para eliminar este aviso.', 'webp-avif-images-converter' );
+		}
+
+		printf(
+			'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+			esc_html( $message )
+		);
 	}
 }

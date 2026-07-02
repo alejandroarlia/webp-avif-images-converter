@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WebP & AVIF Images Converter
  * Description: Convierte imágenes subidas (PNG/JPG) a formato WebP y AVIF usando GD.
- * Version:     1.0.2
+ * Version:     1.0.3
  * Author:      Bronto.ar
  * Author URI:  https://bronto.ar
  * Text Domain: webp-avif-images-converter
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Plugin version.
  */
-define( 'WPAC_VERSION', '1.0.2' );
+define( 'WPAC_VERSION', '1.0.3' );
 
 /**
  * Absolute path to the plugin directory (with trailing slash).
