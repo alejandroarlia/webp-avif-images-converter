@@ -21,7 +21,7 @@ class Webp_Avif_Images_Converter_Settings {
 	 *
 	 * @var string[]
 	 */
-	private const ALLOWED_INPUT_FORMATS = array( 'png', 'jpg' );
+	private const ALLOWED_INPUT_FORMATS = array( 'png', 'jpg', 'gif' );
 
 	/**
 	 * Allowed output format slugs.
@@ -151,7 +151,6 @@ class Webp_Avif_Images_Converter_Settings {
 	public function sanitize_settings( $input ): array {
 		$existing = get_option( self::OPTION_NAME, array() );
 
-		// Bail early if nonce is invalid or capability is missing.
 		if ( ! isset( $_POST[ self::NONCE_NAME ] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ self::NONCE_NAME ] ) ), self::NONCE_ACTION ) ) {
 			add_settings_error( self::OPTION_NAME, 'wpac_nonce_failed', __( 'Error de seguridad. La configuración no se guardó.', 'webp-avif-images-converter' ), 'error' );
 			return is_array( $existing ) ? $existing : $this->get_defaults();
@@ -177,7 +176,7 @@ class Webp_Avif_Images_Converter_Settings {
 
 		if ( empty( $sanitized['input_formats'] ) ) {
 			add_settings_error( self::OPTION_NAME, 'wpac_no_input', __( 'Debes seleccionar al menos un formato de entrada.', 'webp-avif-images-converter' ), 'error' );
-			$sanitized['input_formats'] = array( 'png', 'jpg' );
+			$sanitized['input_formats'] = array( 'png', 'jpg', 'gif' );
 		}
 
 		// Quality: clamp 1–100.
@@ -203,16 +202,6 @@ class Webp_Avif_Images_Converter_Settings {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-
-		$settings = get_option( self::OPTION_NAME, $this->get_defaults() );
-
-		if ( ! is_array( $settings ) ) {
-			$settings = $this->get_defaults();
-		}
-
-		$input_formats  = $settings['input_formats'] ?? array( 'png', 'jpg' );
-		$quality        = absint( $settings['quality'] ?? 100 );
-		$output_formats = $settings['output_formats'] ?? array( 'webp' );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Convertidor de imágenes', 'webp-avif-images-converter' ); ?></h1>
@@ -221,112 +210,8 @@ class Webp_Avif_Images_Converter_Settings {
 				settings_fields( self::OPTION_GROUP );
 				wp_nonce_field( self::NONCE_ACTION, self::NONCE_NAME, false );
 				do_settings_sections( 'webp-avif-images-converter' );
+				submit_button( __( 'Guardar configuración', 'webp-avif-images-converter' ) );
 				?>
-
-				<!-- Input formats -->
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Formatos de entrada', 'webp-avif-images-converter' ); ?></th>
-						<td>
-							<fieldset>
-								<legend class="screen-reader-text">
-									<?php esc_html_e( 'Formatos de entrada', 'webp-avif-images-converter' ); ?>
-								</legend>
-								<label for="wpac-input-png">
-									<input
-										type="checkbox"
-										name="<?php echo esc_attr( self::OPTION_NAME ); ?>[input_formats][]"
-										value="png"
-										id="wpac-input-png"
-										<?php checked( in_array( 'png', $input_formats, true ) ); ?>
-									/>
-									<?php esc_html_e( 'PNG', 'webp-avif-images-converter' ); ?>
-								</label>
-								<br />
-								<label for="wpac-input-jpg">
-									<input
-										type="checkbox"
-										name="<?php echo esc_attr( self::OPTION_NAME ); ?>[input_formats][]"
-										value="jpg"
-										id="wpac-input-jpg"
-										<?php checked( in_array( 'jpg', $input_formats, true ) ); ?>
-									/>
-									<?php esc_html_e( 'JPG / JPEG', 'webp-avif-images-converter' ); ?>
-								</label>
-								<p class="description">
-									<?php esc_html_e( 'Selecciona los formatos de imagen que deseas convertir.', 'webp-avif-images-converter' ); ?>
-								</p>
-							</fieldset>
-						</td>
-					</tr>
-
-					<!-- Quality slider -->
-					<tr>
-						<th scope="row">
-							<label for="wpac-quality"><?php esc_html_e( 'Calidad', 'webp-avif-images-converter' ); ?></label>
-						</th>
-						<td>
-							<input
-								type="range"
-								name="<?php echo esc_attr( self::OPTION_NAME ); ?>[quality]"
-								id="wpac-quality"
-								min="1"
-								max="100"
-								step="1"
-								value="<?php echo esc_attr( $quality ); ?>"
-								oninput="document.getElementById('wpac-quality-value').textContent = this.value"
-							/>
-							<span id="wpac-quality-value"><?php echo esc_html( (string) $quality ); ?></span>%
-							<p class="description">
-								<?php esc_html_e( 'Calidad de compresión para WebP y AVIF (1–100).', 'webp-avif-images-converter' ); ?>
-							</p>
-						</td>
-					</tr>
-
-					<!-- Output formats -->
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Formatos de salida', 'webp-avif-images-converter' ); ?></th>
-						<td>
-							<fieldset>
-								<legend class="screen-reader-text">
-									<?php esc_html_e( 'Formatos de salida', 'webp-avif-images-converter' ); ?>
-								</legend>
-								<label for="wpac-output-webp">
-									<input
-										type="checkbox"
-										name="<?php echo esc_attr( self::OPTION_NAME ); ?>[output_formats][]"
-										value="webp"
-										id="wpac-output-webp"
-										<?php checked( in_array( 'webp', $output_formats, true ) ); ?>
-									/>
-									<?php esc_html_e( 'WebP', 'webp-avif-images-converter' ); ?>
-								</label>
-								<br />
-								<label for="wpac-output-avif">
-									<input
-										type="checkbox"
-										name="<?php echo esc_attr( self::OPTION_NAME ); ?>[output_formats][]"
-										value="avif"
-										id="wpac-output-avif"
-										<?php disabled( ! $this->avif_available ); ?>
-										<?php checked( in_array( 'avif', $output_formats, true ) && $this->avif_available ); ?>
-									/>
-									<?php esc_html_e( 'AVIF', 'webp-avif-images-converter' ); ?>
-									<?php if ( ! $this->avif_available ) : ?>
-										<span class="description" style="color: #d63638;">
-											— <?php esc_html_e( 'No disponible en este servidor.', 'webp-avif-images-converter' ); ?>
-										</span>
-									<?php endif; ?>
-								</label>
-								<p class="description">
-									<?php esc_html_e( 'Selecciona los formatos de salida generados al subir imágenes.', 'webp-avif-images-converter' ); ?>
-								</p>
-							</fieldset>
-						</td>
-					</tr>
-				</table>
-
-				<?php submit_button( __( 'Guardar configuración', 'webp-avif-images-converter' ) ); ?>
 			</form>
 
 			<p class="description">
@@ -386,24 +271,109 @@ class Webp_Avif_Images_Converter_Settings {
 	}
 
 	/**
-	 * Render the input formats field (for Settings API callback).
+	 * Render the input formats field — checkboxes for PNG, JPG, GIF.
 	 */
 	public function render_input_formats_field(): void {
-		// Field rendered inline in render_page() for full layout control.
+		$settings      = get_option( self::OPTION_NAME, $this->get_defaults() );
+		$input_formats = $settings['input_formats'] ?? array( 'png', 'jpg', 'gif' );
+
+		$formats = array(
+			'png' => __( 'PNG', 'webp-avif-images-converter' ),
+			'jpg' => __( 'JPG / JPEG', 'webp-avif-images-converter' ),
+			'gif' => __( 'GIF', 'webp-avif-images-converter' ),
+		);
+		?>
+		<fieldset>
+			<legend class="screen-reader-text">
+				<?php esc_html_e( 'Formatos de entrada', 'webp-avif-images-converter' ); ?>
+			</legend>
+			<?php foreach ( $formats as $value => $label ) : ?>
+				<label for="wpac-input-<?php echo esc_attr( $value ); ?>">
+					<input
+						type="checkbox"
+						name="<?php echo esc_attr( self::OPTION_NAME ); ?>[input_formats][]"
+						value="<?php echo esc_attr( $value ); ?>"
+						id="wpac-input-<?php echo esc_attr( $value ); ?>"
+						<?php checked( in_array( $value, $input_formats, true ) ); ?>
+					/>
+					<?php echo esc_html( $label ); ?>
+				</label>
+				<br />
+			<?php endforeach; ?>
+			<p class="description">
+				<?php esc_html_e( 'Selecciona los formatos de imagen que deseas convertir. Por defecto se convierten PNG, JPG y GIF.', 'webp-avif-images-converter' ); ?>
+			</p>
+		</fieldset>
+		<?php
 	}
 
 	/**
-	 * Render the quality field (for Settings API callback).
+	 * Render the quality range slider field.
 	 */
 	public function render_quality_field(): void {
-		// Field rendered inline in render_page() for full layout control.
+		$settings = get_option( self::OPTION_NAME, $this->get_defaults() );
+		$quality  = absint( $settings['quality'] ?? 100 );
+		?>
+		<input
+			type="range"
+			name="<?php echo esc_attr( self::OPTION_NAME ); ?>[quality]"
+			id="wpac-quality"
+			min="1"
+			max="100"
+			step="1"
+			value="<?php echo esc_attr( $quality ); ?>"
+			oninput="document.getElementById('wpac-quality-value').textContent = this.value"
+		/>
+		<span id="wpac-quality-value"><?php echo esc_html( (string) $quality ); ?></span>%
+		<p class="description">
+			<?php esc_html_e( 'Calidad de compresión para WebP y AVIF (1–100). Un valor más alto produce mejor calidad pero archivos más grandes.', 'webp-avif-images-converter' ); ?>
+		</p>
+		<?php
 	}
 
 	/**
-	 * Render the output formats field (for Settings API callback).
+	 * Render the output formats field — checkboxes for WebP and AVIF.
 	 */
 	public function render_output_formats_field(): void {
-		// Field rendered inline in render_page() for full layout control.
+		$settings       = get_option( self::OPTION_NAME, $this->get_defaults() );
+		$output_formats = $settings['output_formats'] ?? array( 'webp' );
+		?>
+		<fieldset>
+			<legend class="screen-reader-text">
+				<?php esc_html_e( 'Formatos de salida', 'webp-avif-images-converter' ); ?>
+			</legend>
+			<label for="wpac-output-webp">
+				<input
+					type="checkbox"
+					name="<?php echo esc_attr( self::OPTION_NAME ); ?>[output_formats][]"
+					value="webp"
+					id="wpac-output-webp"
+					<?php checked( in_array( 'webp', $output_formats, true ) ); ?>
+				/>
+				<?php esc_html_e( 'WebP', 'webp-avif-images-converter' ); ?>
+			</label>
+			<br />
+			<label for="wpac-output-avif">
+				<input
+					type="checkbox"
+					name="<?php echo esc_attr( self::OPTION_NAME ); ?>[output_formats][]"
+					value="avif"
+					id="wpac-output-avif"
+					<?php disabled( ! $this->avif_available ); ?>
+					<?php checked( in_array( 'avif', $output_formats, true ) && $this->avif_available ); ?>
+				/>
+				<?php esc_html_e( 'AVIF', 'webp-avif-images-converter' ); ?>
+				<?php if ( ! $this->avif_available ) : ?>
+					<span class="description" style="color: #d63638;">
+						— <?php esc_html_e( 'No disponible en este servidor.', 'webp-avif-images-converter' ); ?>
+					</span>
+				<?php endif; ?>
+			</label>
+			<p class="description">
+				<?php esc_html_e( 'Formatos de salida generados al subir imágenes. Podés seleccionar ambos.', 'webp-avif-images-converter' ); ?>
+			</p>
+		</fieldset>
+		<?php
 	}
 
 	/**
@@ -413,7 +383,7 @@ class Webp_Avif_Images_Converter_Settings {
 	 */
 	private function get_defaults(): array {
 		return array(
-			'input_formats'  => array( 'png', 'jpg' ),
+			'input_formats'  => array( 'png', 'jpg', 'gif' ),
 			'quality'        => 100,
 			'output_formats' => array( 'webp' ),
 		);

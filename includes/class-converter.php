@@ -108,6 +108,9 @@ class Webp_Avif_Images_Converter_Converter {
 			case 'image/jpg':
 				$resource = @imagecreatefromjpeg( $path );
 				break;
+			case 'image/gif':
+				$resource = @imagecreatefromgif( $path );
+				break;
 			default:
 				return new WP_Error(
 					'wpac_unsupported_mime',

@@ -56,8 +56,8 @@ class Webp_Avif_Images_Converter_Media {
 			return $metadata;
 		}
 
-		// Only convert PNG and JPEG.
-		$allowed_mimes = array( 'image/png', 'image/jpeg', 'image/jpg' );
+		// Only convert supported image types.
+		$allowed_mimes = array( 'image/png', 'image/jpeg', 'image/jpg', 'image/gif' );
 		if ( ! in_array( $mime, $allowed_mimes, true ) ) {
 			return $metadata;
 		}
@@ -68,9 +68,15 @@ class Webp_Avif_Images_Converter_Media {
 			return $metadata;
 		}
 
-		// Check input format against settings.
-		$input_format = ( 'image/png' === $mime ) ? 'png' : 'jpg';
-		$input_formats = $settings['input_formats'] ?? array( 'png', 'jpg' );
+		// Map MIME to input format slug.
+		$mime_map     = array(
+			'image/png'  => 'png',
+			'image/jpeg' => 'jpg',
+			'image/jpg'  => 'jpg',
+			'image/gif'  => 'gif',
+		);
+		$input_format = $mime_map[ $mime ] ?? '';
+		$input_formats = $settings['input_formats'] ?? array( 'png', 'jpg', 'gif' );
 		if ( ! in_array( $input_format, $input_formats, true ) ) {
 			return $metadata;
 		}

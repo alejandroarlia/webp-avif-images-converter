@@ -95,7 +95,7 @@ class Webp_Avif_Images_Converter_Activator {
 			update_option(
 				'webp_avif_images_converter_settings',
 				array(
-					'input_formats'  => array( 'png', 'jpg' ),
+					'input_formats'  => array( 'png', 'jpg', 'gif' ),
 					'quality'        => 100,
 					'output_formats' => array( 'webp' ),
 				)
